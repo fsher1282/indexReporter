@@ -49,7 +49,7 @@ def collect_data():
         daily_changes.append(str(daily_change))
         weekly_changes.append(str(weekly_change))
 
-    # Create data table and convert it to HTML
+    # Create data table and convert it to HTML for email    
     data_table = pd.DataFrame({'Index': ['Dow Jones', 'S&P 500', 'NASDAQ', 'TNX',
                                          'Gold', 'Crude Oil', 'Silver'],
                                'Current Prices': current_prices,
