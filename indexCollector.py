@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 # List of all indexes to be gathered
-tickers = ['^DJI', '^GSPC', '^IXIC', '^TNX', 'GC=F', 'CL=F', 'SI=F']
+tickers = ['^DJI', '^GSPC', '^IXIC', 'CL=F', 'GC=F',  'SI=F', '^TNX']
 
 # Initialize list of all values to be gathered
 current_prices = []
@@ -50,8 +50,8 @@ def collect_data():
         weekly_changes.append(str(weekly_change))
 
     # Create data table and convert it to HTML for email    
-    data_table = pd.DataFrame({'Index': ['Dow Jones', 'S&P 500', 'NASDAQ', 'TNX',
-                                         'Gold', 'Crude Oil', 'Silver'],
+    data_table = pd.DataFrame({'Index': ['Dow Jones', 'S&P 500', 'NASDAQ', 'Crude Oil',
+                                         'Gold', 'Silver', '10-year T'],
                                'Current Prices': current_prices,
                                'Prev.Close': prev_closes,
                                "Today's Change": daily_changes,

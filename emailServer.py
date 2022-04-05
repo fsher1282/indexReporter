@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 # Credentials for email service
 smtp_server = "smtp.gmail.com"
 sender_email = "theindexreporter@gmail.com"
-receiver_email = "fredrick.fisher@lpl.com"
+receiver_email = "frederick.fisher@lpl.com"
 password = '@8pL#V*MkBe2F-ka'
 
 # Components of email message
