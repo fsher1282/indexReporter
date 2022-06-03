@@ -1,57 +1,45 @@
-import indexCollector as Indexes
 import smtplib
 import ssl
-
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Credentials for email service
-smtp_server = "smtp.gmail.com"
-sender_email = "theindexreporter@gmail.com"
-receiver_email = "frederick.fisher@lpl.com"
-password = '@8pL#V*MkBe2F-ka'
 
-# Components of email message
-message = MIMEMultipart("alternative")
-message["Subject"] = "Weekly Index Report"
-message["From"] = sender_email
-message["To"] = receiver_email
-
-# Collect data
-try:
-    my_results = Indexes.collect_data()
-
-except Exception as e:
-    my_results = "Something went wrong... \n " + str(e)
-    print(my_results)
-try:
-    intro = """<html>
-               <head>
-               <p>Here is your weekly report for the market Indexes...</p>
-               </head>
+class EmailServer:
     """
+    The EmailServer is meant to help streamline pandas dataframes that have been
+    converted to html.
+    """
+    def __init__(self, smtp_server, port, sender_email, password, email_list):
+        self.smtp_server = smtp_server
+        self.sender_email = sender_email
+        self.email_list = email_list
+        self.password = password
+        self.server = smtplib.SMTP_SSL(self.smtp_server, port, context=ssl.create_default_context())
+        self.message = MIMEMultipart("alternative")
 
-    conclusion = """
-        <body>
-            <p style='color:red;'>Have a good day </p>
-        </body>
-    </html>"""
+    def mail_composition(self, subject, email_from, recipient, intro, body, conclusion):
+        # Components of email message
+        self.message["Subject"] = subject
+        self.message["From"] = email_from
+        self.message["To"] = recipient
 
-    # Combine all parts of message
-    message_content = intro + my_results + conclusion
-    data = MIMEText(message_content, "html")
+        # Compose Message
+        message_content = intro + body + conclusion
+        data = MIMEText(message_content, "html")
 
-    # Attach message to email
-    message.attach(data)
+        # Attach message to email
+        self.message.attach(data)
 
-    # Create secure connection with server and send email
-    context = ssl.create_default_context()
-    server = smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context)
-    server.ehlo()
-    server.login(sender_email, password)
-    server.sendmail(sender_email, receiver_email, message.as_string())
-    # Ensure email service is shutdown
-    server.quit()
-except Exception as e:
-    # Print Error
-    print(e)
+    def send_message(self, recipient):
+        # Create secure connection with server and send email
+        self.server.ehlo()
+        self.server.login(self.sender_email, self.password)
+        self.server.sendmail(self.sender_email, recipient, self.message.as_string())
+
+    def __del__(self):
+        # Ensure email service is shutdown
+        print("Server is closed and all credentials have been deleted")
+
+
+
+

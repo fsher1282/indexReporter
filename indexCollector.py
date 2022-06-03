@@ -1,62 +1,73 @@
 import yfinance as yf
-import pandas as pd
-
-# List of all indexes to be gathered
-tickers = ['^DJI', '^GSPC', '^IXIC', 'CL=F', 'GC=F',  'SI=F', '^TNX']
-
-# Initialize list of all values to be gathered
-current_prices = []
-prev_closes = []
-last_weeks_closes = []
-daily_changes = []
-weekly_changes = []
 
 
-def get_current_price(tick):
-    # Get today's price
-    today_data = yf.Ticker.history(tick, period='1d')
-    return round(today_data['Close'][0], 2)
+class IndexCollector:
+    """
+    Index collector uses yfinance library to get important information on indexes/stocks/bonds etc.
+    that would be relavent on a week by week basis then returns them as a dictionary
 
+    """
 
-def get_last_weeks_close(tick):
-    # Get last weeks closing price
-    today_data = yf.Ticker.history(tick, period='6d')
-    return round(today_data['Close'][0], 2)
+    def __init__(self, tickers):
+        # Initialize list of all values to be gathered
+        self.tickers = tickers
+        self.current_prices = []
+        self.prev_closes = []
+        self.last_weeks_closes = []
+        self.daily_changes = []
+        self.weekly_changes = []
+        self.long_names = []
 
+    @staticmethod
+    def get_current_price(tick):
+        # Get today's price
+        today_data = yf.Ticker.history(tick, period='1d')
+        return round(today_data['Close'][0], 2)
 
-def collect_data():
-    # Loop through each ticker to get values and organize in data table
-    for tick in tickers:
-        # Gather all values
-        ticker = yf.Ticker(tick)
-        current_price = round(get_current_price(ticker), 2)
-        prev_close = round(ticker.info['previousClose'], 2)
-        last_weeks_close = round(get_last_weeks_close(ticker), 2)
-        daily_change = round(current_price - prev_close, 2)
-        weekly_change = round(current_price - last_weeks_close, 2)
+    @staticmethod
+    def get_last_weeks_close(tick):
+        # Get last week's closing price
+        today_data = yf.Ticker.history(tick, period='6d')
+        return round(today_data['Close'][0], 2)
 
-        # Clean the data
-        current_price = "{:,.2f}".format(current_price)
-        prev_close = "{:,.2f}".format(prev_close)
-        last_weeks_close = "{:,.2f}".format(last_weeks_close)
-        daily_change = "{:,.2f}".format(daily_change)
-        weekly_change = "{:,.2f}".format(weekly_change)
+    def collect_data(self):
+        # Loop through each ticker to get values and organize in dictionary
+        for tick in self.tickers:
+            ticker = yf.Ticker(tick)
 
-        # Format Data
-        current_prices.append(str(current_price))
-        prev_closes.append(str(prev_close))
-        last_weeks_closes.append(str(last_weeks_close))
-        daily_changes.append(str(daily_change))
-        weekly_changes.append(str(weekly_change))
+            # Collect scraped values
+            current_price = round(self.get_current_price(ticker), 2)
+            prev_close = round(ticker.info['previousClose'], 2)
+            last_weeks_close = round(self.get_last_weeks_close(ticker), 2)
 
-    # Create data table and convert it to HTML for email    
-    data_table = pd.DataFrame({'Index': ['Dow Jones', 'S&P 500', 'NASDAQ', 'Crude Oil',
-                                         'Gold', 'Silver', '10-year T'],
-                               'Current Prices': current_prices,
-                               'Prev.Close': prev_closes,
-                               "Today's Change": daily_changes,
-                               'L.W Change': last_weeks_closes,
-                               '1-Week Change': weekly_changes}).to_html()
+            # Infer other values based off scrapped values
+            daily_change = round(current_price - prev_close, 2)
+            weekly_change = round(current_price - last_weeks_close, 2)
 
-    return data_table
+            # Remove trailing decimal points
+            current_price = "{:,.2f}".format(current_price)
+            prev_close = "{:,.2f}".format(prev_close)
+            last_weeks_close = "{:,.2f}".format(last_weeks_close)
+            daily_change = "{:,.2f}".format(daily_change)
+            weekly_change = "{:,.2f}".format(weekly_change)
 
+            # Append scrapped data to ordered lists
+            self.long_names.append(str(ticker.info['shortName']))
+            self.current_prices.append(str(current_price))
+            self.prev_closes.append(str(prev_close))
+            self.last_weeks_closes.append(str(last_weeks_close))
+            self.daily_changes.append(str(daily_change))
+            self.weekly_changes.append(str(weekly_change))
+
+        # Store collected data in a dictionary
+        data_table = {'Index': self.long_names,
+                      "Current Prices": self.current_prices,
+                      'Prev.Close': self.prev_closes,
+                      "Today's Change": self.daily_changes,
+                      'L.W Change': self.last_weeks_closes,
+                      '1-Week Change': self.weekly_changes}
+
+        return data_table
+
+    def __del__(self):
+        print('IndexCollector has been deleted...')
